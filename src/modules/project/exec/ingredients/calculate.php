@@ -18,7 +18,7 @@ foreach (\Project\IngredientTypeRepository::findMany([]) as $type) {
 // Формируем список типов ингредиентов
 $ingredientTypes = [];
 
-foreach (str_split($input) as $code) {
+foreach (mb_str_split($input) as $code) {
     // Проверяем, есть ли запрашиваемый ингредиент в нашей карте
     if (empty($ingredientTypeMap[$code])) {
         // Упс, ингредиент не найден, ругаемся
