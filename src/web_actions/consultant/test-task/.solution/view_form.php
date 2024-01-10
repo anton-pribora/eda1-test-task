@@ -58,7 +58,7 @@ Layout()->startGrab('body.content.end');
   </form>
 
   <div v-if="result">
-    <h3 class="mt-3 mb-2">Комбинации компонентов ({{result.length}})</h3>
+    <h3 class="mt-3 mb-2">Комбинации ингредиентов ({{result.length}})</h3>
 
     <ul class="nav nav-tabs mb-2">
       <li class="nav-item">
