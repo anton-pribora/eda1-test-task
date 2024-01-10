@@ -62,4 +62,9 @@ class IngredientType extends \ApCode\Billet\AbstractBillet implements \Interface
         trigger_error(sprintf('Unknown url asset %s in scope %s', $key, $scope), E_USER_WARNING);
         return null;
     }
+
+    public function toArray()
+    {
+        return $this->data;
+    }
 }
