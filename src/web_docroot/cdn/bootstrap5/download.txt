@@ -1,0 +1,8 @@
+https://unpkg.com/bootstrap@5/dist/js/bootstrap.bundle.min.js
+https://unpkg.com/bootstrap@5/dist/js/bootstrap.bundle.min.js.map
+https://unpkg.com/bootstrap@5/dist/css/bootstrap.min.css
+https://unpkg.com/bootstrap@5/dist/css/bootstrap.min.css.map
+https://unpkg.com/bootstrap-icons@1/font/bootstrap-icons.css
+
+https://unpkg.com/bootstrap-icons@1/font/fonts/bootstrap-icons.woff    fonts/
+https://unpkg.com/bootstrap-icons@1/font/fonts/bootstrap-icons.woff2   fonts/

@@ -1,0 +1,19 @@
+# ZendStudio files
+.buildpath
+.project
+.settings
+
+# NetBeans files
+nbproject/
+
+# VisualStudioCode
+.vscode/
+
+# JetBrains
+.idea/
+
+# composer
+vendor/
+
+database/
+.env

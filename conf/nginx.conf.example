@@ -1,0 +1,39 @@
+server {
+    listen *:80;
+    server_name ap.admin;
+
+    root       /app/src/web_docroot;
+    access_log /app/logs/access.log;
+    error_log  /app/logs/error.log;
+
+    set $phpini "
+        display_errors=On;
+        error_reporting=E_ALL;
+        error_log=/app/logs/php-errors.log;
+        log_errors=On;
+    ";
+
+    index index.php index.html;
+
+    location ^~ /asset|cdn/ {
+    }
+
+    location ^~ /public/file/ {
+        try_files - @run_script;
+    }
+
+    location ~ ^[^\.]+(\.(php|html))?$ {
+        try_files - @run_script;
+    }
+
+    location @run_script {
+        include fastcgi_params;
+
+        ## Настройка окружения
+        fastcgi_param APPLICATION_ENV development;
+
+        fastcgi_param PHP_VALUE $phpini;
+        fastcgi_param SCRIPT_FILENAME $document_root/index.php;
+        fastcgi_pass php:9000;
+    }
+}

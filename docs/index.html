@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="apple-touch-icon" sizes="120x120" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="mask-icon" href="safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="theme-color" content="#ffffff">
+  <title>Мастер установки Ap.admin</title>
+  <link href="https://unpkg.com/bootstrap@5/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/bootstrap-icons@1/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar bg-body-tertiary">
+  <div class="container">
+    <a class="navbar-brand" href="">
+      <img src="favicon-32x32.png" alt="Logo" height="24" class="d-inline-block align-text-top">
+      Ap.admin
+    </a>
+  </div>
+</nav>
+<div class="container" id="content">
+  <h1>Мастер установки</h1>
+  <form>
+    <div class="mb-3">
+      <label for="name" class="form-label">Название проекта</label>
+      <div class="row align-items-start">
+        <div class="col-6">
+          <input type="text" class="form-control border-secondary" id="name" v-model="name">
+        </div>
+        <div class="col text-body-secondary small">
+          Название проекта добавляется в &lt;title>, а также показывается над левым меню.
+        </div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="domain" class="form-label">Домен</label>
+      <div class="row align-items-start">
+        <div class="col-6">
+          <input type="text" class="form-control border-secondary" id="domain" v-model="domain">
+        </div>
+        <div class="col text-body-secondary small">
+          Относительно домена вычисляются папка проекта, локальный домен и название контейнера с PHP (если используется докер).
+        </div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Краткое описание проекта</label>
+      <div class="row align-items-start">
+        <div class="col-6">
+          <textarea class="form-control border-secondary" rows="3" id="description" v-model="description"></textarea>
+        </div>
+        <div class="col text-body-secondary small">
+          Описание проекта для начального README.md
+        </div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <ul class="nav nav-underline">
+        <li class="nav-item">
+          <a class="nav-link" :class="{active: this.type === 'docker'}" @click.prevent="type = 'docker'" href="javascript:void(0)">Установка через docker compose</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" :class="{active: this.type === 'host'}" @click.prevent="type = 'host'" href="javascript:void(0)">Установка в систему</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="row align-items-center mb-3">
+      <div class="col-2">
+        Окружение
+      </div>
+      <div class="col">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input border-secondary" type="radio" id="app_env.development" value="development" v-model="app_env">
+          <label class="form-check-label" for="app_env.development">Development</label>
+        </div>
+        <div class="form-check form-check-inline" title="Доступно только для установки в систему">
+          <input class="form-check-input border-secondary" type="radio" id="app_env.production" value="production" :disabled="type === 'docker'" v-model="app_env">
+          <label class="form-check-label" for="app_env.production">Production</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="row align-items-center mb-3" v-if="type === 'docker'">
+      <div class="col-2">Контейнер PHP</div>
+      <div class="col">
+        <div class="row row-cols-4">
+          <div class="col">
+            <div class="form-floating">
+              <input type="text" class="form-control border-secondary" id="docker_php_name" placeholder="Название контейнера" v-model="docker_php_name">
+              <label for="docker_php_name">Название контейнера</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row align-items-center mb-3" v-if="type === 'docker'">
+      <div class="col-2">Контейнер NGINX</div>
+      <div class="col">
+        <div class="row row-cols-4">
+          <div class="col">
+            <div class="form-floating">
+              <input type="text" class="form-control border-secondary" id="docker_nginx_local_port" placeholder="Локальный порт" v-model="docker_nginx_local_port">
+              <label for="docker_nginx_local_port">Локальный порт</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row align-items-center mb-3" v-if="type === 'docker'">
+      <div class="col-2">Контейнер MariaDB</div>
+      <div class="col">
+        <div class="row row-cols-4">
+          <div class="col">
+            <div class="form-floating">
+              <input type="text" class="form-control border-secondary" id="docker_db_local_port" placeholder="Локальный порт" v-model="docker_db_local_port">
+              <label for="docker_db_local_port">Локальный порт</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row align-items-start mb-3" v-if="type === 'host'">
+      <div class="col-2">
+        Настройки базы
+      </div>
+      <div class="col">
+        <div class="row row-cols-4">
+          <div class="col">
+            <div class="form-floating">
+              <input type="text" class="form-control border-secondary" id="db_name" placeholder="Название" v-model="db_name">
+              <label for="db_name">Название</label>
+            </div>
+            <div class="form-check mt-1">
+              <input class="form-check-input border-secondary" type="checkbox" value="" id="db_create" v-model="db_create">
+              <label class="form-check-label" for="db_create">
+                Создать базу
+              </label>
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-floating">
+              <input type="text" class="form-control border-secondary" id="db_user" placeholder="Пользователь" v-model="db_user">
+              <label for="db_user">Пользователь</label>
+            </div>
+            <div class="form-check mt-1">
+              <input class="form-check-input border-secondary" type="checkbox" value="" id="db_create_user" v-model="db_create_user">
+              <label class="form-check-label" for="db_create_user">
+                Создать пользователя
+              </label>
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-floating">
+              <input type="text" class="form-control border-secondary" id="db_pass" placeholder="Пароль" v-model="db_pass" autocomplete="off">
+              <label for="db_pass">Пароль</label>
+            </div>
+            <a href="" class="d-block mt-1" @click.prevent="db_pass = this.passwd()"><i class="bi bi-shuffle me-1"></i>Случайный</a>
+          </div>
+          <div class="col">
+            <div class="form-floating">
+              <input type="text" class="form-control border-secondary" id="db_host" placeholder="Хост" v-model="db_host">
+              <label for="db_host">Хост</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row align-items-center mb-3">
+      <div class="col-2">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input border-secondary" type="checkbox" id="local_domain" v-model="local_domain">
+          <label class="form-check-label" for="local_domain">Локальный домен</label>
+        </div>
+      </div>
+      <div class="col">
+        <div class="row row-cols-4">
+          <div class="col">
+            <div class="form-floating">
+              <input type="text" class="form-control border-secondary" id="local_domain_name" placeholder="Название" v-model="local_domain_name" :disabled="!local_domain">
+              <label for="local_domain_name">Название</label>
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-floating">
+              <input type="text" class="form-control border-secondary" id="local_domain_ip" placeholder="Адрес" v-model="local_domain_ip" :disabled="!local_domain">
+              <label for="local_domain_ip">Адрес</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row align-items-center mb-3">
+      <div class="col">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input border-secondary" type="checkbox" id="local_domain_add_to_hosts" v-model="local_domain_add_to_hosts" :disabled="!local_domain_is_valid">
+          <label class="form-check-label" for="local_domain_add_to_hosts">Добавить локальный домен в /etc/hosts</label>
+        </div>
+      </div>
+    </div>
+    <div class="row align-items-center mb-3">
+      <div class="col">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input border-secondary" type="checkbox" id="local_domain_add_to_global_web_server" v-model="local_domain_add_to_global_web_server" :disabled="!local_domain_is_valid">
+          <label class="form-check-label" for="local_domain_add_to_global_web_server">Добавить ссылку на конфиг в /etc/nginx/sites-enabled/</label>
+        </div>
+      </div>
+    </div>
+    <div class="row align-items-center mb-3">
+      <div class="col">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input border-secondary" type="checkbox" id="example_table" v-model="example_table" :disabled="app_env === 'production'">
+          <label class="form-check-label" for="example_table">Пример таблицы для генератора разделов (<code>example_news</code>)</label>
+        </div>
+      </div>
+    </div>
+    <div class="row align-items-center mb-3">
+      <div class="col">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input border-secondary" type="checkbox" id="init_new_repo" v-model="init_new_repo" :disabled="app_env === 'production'">
+          <label class="form-check-label" for="init_new_repo">Инициализировать новый репозиторий</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-5">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+          <li class="nav-item">
+            <a class="nav-link" :class="{active: output === 'console'}" @click.prevent="output = 'console'" href="javascript: void(0)"><i class="bi bi-filetype-sh me-1"></i>Сценарий установки</a>
+          </li>
+        </ul>
+      </div>
+      <div class="card-body">
+        <div class="alert" :class="['alert-' + e.type]" v-for="e in alerts">
+          <h4 v-if="e.head" class="alert-heading">{{e.head}}</h4>
+          <div v-if="e.body" v-html="e.body"></div>
+        </div>
+        <div class="mb-3">
+          <button type="button" @click="copyConsole()" class="btn border-secondary btn-light me-3" title="Скопировать текст для вставки в терминал">
+            <i v-if="copyState[0] === 'ready'" class="bi bi-terminal me-1"></i>
+            <i v-if="copyState[0] === 'error'" class="bi bi-x-circle text-danger me-1"></i>
+            <i v-if="copyState[0] === 'success'" class="bi bi-check-lg text-success me-1"></i>
+            <span v-if="copyState[0] === 'copying'" class="spinner-border ms-1 text-primary spinner-border-sm"></span>
+            Скопировать одной строкой
+          </button>
+          <button type="button" @click="copyText()" class="btn border-secondary btn-light" title="Скопировать текст в буфер обмена">
+            <i v-if="copyState[1] === 'ready'" class="bi bi-clipboard me-1"></i>
+            <i v-if="copyState[1] === 'error'" class="bi bi-x-circle text-danger me-1"></i>
+            <i v-if="copyState[1] === 'success'" class="bi bi-check-lg text-success me-1"></i>
+            <span v-if="copyState[1] === 'copying'" class="spinner-border ms-1 text-primary spinner-border-sm"></span>
+            Скопировать текст
+          </button>
+        </div>
+        <pre class="mb-0"><code>{{script}}</code></pre>
+      </div>
+    </div>
+  </form>
+</div>
+<script src="https://unpkg.com/bootstrap@5/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script>
+  const app = Vue.createApp({
+    data: () => ({
+      type: 'docker',
+      copyState: ['ready', 'ready'],
+      name: 'Ap.admin',
+      domain: 'ap.admin',
+      description: 'Панель управления для сайта. Для установки клонируйте репозиторий и выполните `setup.sh`.',
+      app_env: 'development',
+      docker_php_name: 'ap.admin',
+      docker_nginx_local_port: '127.0.0.1:4101',
+      docker_db_local_port: '127.0.0.1:4102',
+      local_domain: false,
+      local_domain_name: 'ap.admin.local',
+      local_domain_ip: '127.0.0.1',
+      local_domain_add_to_hosts: true,
+      local_domain_add_to_global_web_server: true,
+      local_domain_is_valid: true,
+      db_name: 'ap_admin',
+      db_host: 'localhost',
+      db_user: 'ap_user',
+      db_pass: '123',
+      db_create: true,
+      db_create_user: true,
+      init_new_repo: true,
+      example_table: true,
+      output: 'console'
+    }),
+    computed: {
+      alerts() {
+        const alerts = [];
+
+        if (this.type === 'docker') {
+          alerts.push({
+            type: 'primary',
+            body: 'Требуется установленный <strong>docker-compose</strong> или docker с плагином <strong>compose</strong>.'
+          });
+        }
+
+        if (this.type === 'host') {
+          alerts.push({
+            type: 'warning',
+            body: 'Убедитесь, что в системе установлены следующие пакеты: <pre class="m-3"><code>git mariadb-server php8.1-gd php8.1-exif php8.1-pdo_mysql php8.1-mb_string php8.1-intl php8.1-tidy php8.1-zip</code></pre>'
+          });
+
+          if (this.app_env === 'development') {
+            alerts.push({
+              type: 'primary',
+              body: 'Убедитесь, что nginx и php-frm имеют доступ на чтение и запись к папкам проекта. Для этого можно поменять владельца ' +
+                'в файлах <code>/etc/nginx/nginx.conf</code> и <code>/etc/php/8.1/fpm/pool.d/www.conf</code>, или же добавить группу пользователя ' +
+                'в www-data (требуется перезагрузка): ' +
+                '<pre class="m-3"><code>sudo usermod -a -G $(id -gn) www-data</code></pre>'
+            });
+          }
+        }
+
+        return alerts;
+      },
+      http_docker_host() {
+        if (String(this.docker_nginx_local_port).match(/^\d+$/)) {
+          return `127.0.0.1:${this.docker_nginx_local_port}`;
+        }
+
+        return this.docker_nginx_local_port;
+      },
+      http_host() {
+        if (this.local_domain_is_valid) {
+          return this.local_domain_name;
+        }
+
+        if (this.type === 'docker') {
+          return this.http_docker_host;
+        }
+
+        return this.domain;
+      },
+      script() {
+        const script = [];
+
+        if (this.output === 'file') {
+          script.push('#!/usr/bin/bash');
+          script.push('');
+        }
+
+        if (this.app_env === 'production') {
+          script.push('# Защита от неверной директории');
+          script.push('[ -d src/web_actions ] || (echo -e "Текущая директория не является проектом Ap.admin\\nСклонируйте свой репозиторий на сервер и перейдите в директорию, где находится папка .git"; exit 1)');
+          script.push('');
+        } else {
+          script.push('# Клонируем репозиторий');
+          script.push(`git clone --depth 1 https://github.com/anton-pribora/ap.admin.git ${this.escapeshellarg(this.domain)}`);
+          script.push(`cd ${this.escapeshellarg(this.domain)}`);
+          script.push('');
+        }
+
+        if (this.app_env === 'development') {
+          script.push('# Задаём настройки проекта');
+          script.push(`sed -i -e ${this.escapeshellarg(`s/'name' => '.*',/'name' => '${this.escape(this.escape(this.name, '\'\\'), '/\\')}',/`)} \\`);
+          script.push(`       -e ${this.escapeshellarg(`s/'SERVER_NAME' => '.*',/'SERVER_NAME' => '${this.escape(this.escape(this.domain, '\'\\'), '/\\')}',/`)} \\`);
+          script.push(`       -e ${this.escapeshellarg(`s/'HTTP_HOST'   => '.*',/'HTTP_HOST'   => '${this.escape(this.escape(this.domain, '\'\\'), '/\\')}',/`)} src/configs/10-global.php`);
+          script.push('');
+
+          script.push('# Определяем владельца проекта');
+          if (this.type === 'host') {
+            script.push('user=$([ $UID == 0 ] && echo www-data || echo $USER)');
+          }
+          if (this.type === 'docker') {
+            script.push('user=$(id -u)');
+          }
+          script.push('');
+
+          script.push('# Локальные настройки хоста');
+          script.push('cat > src/configs/50-server.local.php <<CONF');
+          script.push(`<?php`);
+          script.push(``);
+          script.push(`Config()->setup([`);
+          script.push(`    'console' => [`);
+          script.push(`        'default_user' => '$user',`);
+          script.push(`        '_SERVER'      => [`);
+          script.push(`            'HTTPS'       => 'off',`);
+          script.push(`            'SERVER_PORT' => '80',`);
+          script.push(`            'HTTP_HOST'   => '${this.escape(this.http_host, '\'\\')}',`);
+          script.push(`        ],`);
+          script.push(`    ],`);
+          script.push(`]);`);
+          script.push('CONF');
+          script.push('');
+        }
+
+        script.push('# Настройки окружения');
+        script.push('cat > src/configs/05-application_env.local.php <<CONF');
+        script.push(`<?php`);
+        script.push(``);
+        script.push(`Config()->set('APPLICATION_ENV', '${this.escape(this.app_env, '\'\\')}');`);
+        script.push(``);
+        script.push(`putenv('APPLICATION_ENV=' . Config()->get('APPLICATION_ENV'));`);
+        script.push('CONF');
+        script.push('');
+
+        if (this.type === 'docker') {
+          script.push('# Настройки для докера');
+
+          const compose_re = [];
+
+          if (this.docker_php_name !== 'ap.admin') {
+            compose_re.push(`s/container_name: ap.admin/container_name: ${this.escape(this.docker_php_name, '/\\')}/`);
+          }
+
+          if (this.docker_nginx_local_port !== '127.0.0.1:3001') {
+            compose_re.push(`s/127.0.0.1:3001/${this.docker_nginx_local_port}/`);
+          }
+
+          if (this.docker_db_local_port !== '127.0.0.1:3002') {
+            compose_re.push(`s/127.0.0.1:3002/${this.docker_db_local_port}/`);
+          }
+
+          if (compose_re.length) {
+            script.push(`sed -i ${compose_re.map(re => `-e ${this.escapeshellarg(re)}`).join(' \\\n       ')} compose.yaml`);
+          }
+
+          script.push('echo -e "UID=$(id -u)\\nGID=$(id -g)" >> .env')
+          script.push('compose=$((docker compose version 2>/dev/null 1>/dev/null) && echo docker compose || echo docker-compose)');
+          script.push('$compose up -d');
+          script.push('');
+          script.push('# Конфиг для NGINX');
+          script.push('cat > conf/nginx.conf <<CONF');
+          script.push('server {');
+          script.push(`  server_name ${this.local_domain_name};`);
+          script.push('  location / {');
+          script.push(`    proxy_pass http://${this.http_docker_host};`);
+          script.push('    proxy_set_header Host \\$host;');
+          script.push('  }');
+          script.push('}');
+          script.push('CONF');
+          script.push('');
+        }
+
+        if (this.type === 'host') {
+          if (this.db_create) {
+            script.push('# Создаём базу данных');
+            script.push(`sudo mysql -e ${this.escapeshellarg(`CREATE DATABASE IF NOT EXISTS \`${this.escape(this.db_name, '`\\')}\`;`)}`);
+            script.push('');
+          }
+
+          if (this.db_create_user) {
+            script.push('# Создаём пользователя');
+            script.push(`sudo mysql -e ${this.escapeshellarg(`GRANT ALL PRIVILEGES ON \`${this.escape(this.db_name, '`\\')}\`.* TO '${this.escape(this.db_name, '\'\\')}'@'${this.db_host === 'localhost' ? 'localhost' : '%'}' IDENTIFIED BY '${this.escape(this.db_pass, '\'\\')}';`)}`);
+            script.push('');
+          }
+
+          script.push('# Конфиг базы');
+          script.push('cat > src/configs/50-db.local.php <<CONF');
+          script.push('<?php');
+          script.push('');
+          script.push('Config()->setup([');
+          script.push(`    'db' => [`);
+          script.push(`        'dsn'      => 'mysql:dbname=${this.escape(this.db_name, '\' ;,\\')};host=${this.escape(this.db_host, '\' ;,\\')};charset=utf8',`);
+          script.push(`        'login'    => '${this.escape(this.db_name, '\'\\')}',`);
+          script.push(`        'password' => '${this.escape(this.db_pass, '\'\\')}',`);
+          script.push(`    ],`);
+          script.push(']);');
+          script.push('CONF');
+          script.push('');
+
+          script.push('# Конфиг для NGINX');
+          script.push('cat > conf/nginx.conf <<CONF');
+          script.push('server {');
+          script.push('    listen *:80;');
+          script.push(`    server_name ${this.local_domain_name};`);
+          script.push('');
+          script.push('    root       \'$PWD/src/web_docroot\';');
+          script.push('    access_log \'$PWD/logs/access.log\';');
+          script.push('    error_log  \'$PWD/logs/error.log\';');
+          script.push('');
+          script.push('    set \\$phpini "');
+          script.push(`        display_errors=${this.app_env === 'development' ? 'On' : 'Off'};`);
+          script.push('        log_errors=On;');
+          script.push('        error_reporting=E_ALL;');
+          script.push('        error_log=\'$PWD/logs/php-errors.log\';');
+          script.push('    ";');
+          script.push('');
+          script.push('    index index.php index.html;');
+          script.push('');
+          script.push('    location ^~ /asset|cdn/ {');
+          script.push('    }');
+          script.push('');
+          script.push('    location ^~ /public/file/ {');
+          script.push('        try_files - @run_script;');
+          script.push('    }');
+          script.push('');
+          script.push('    location ~ ^[^\.]+(\.(php|html))?\\$ {');
+          script.push('        try_files - @run_script;');
+          script.push('    }');
+          script.push('');
+          script.push('    location @run_script {');
+          script.push('        include fastcgi_params;');
+          script.push('');
+          script.push('        ## Настройка окружения');
+          script.push(`        fastcgi_param APPLICATION_ENV ${this.app_env};`);
+          script.push('');
+          script.push('        fastcgi_param PHP_VALUE \\$phpini;');
+          script.push('        fastcgi_param SCRIPT_FILENAME \\$document_root/index.php;');
+          script.push('        fastcgi_pass unix:/run/php/php-fpm.sock;');
+          script.push('    }');
+          script.push('}');
+          script.push('CONF');
+          script.push('');
+        }
+
+        if (this.local_domain && this.local_domain_is_valid && (this.local_domain_add_to_hosts || this.local_domain_add_to_global_web_server)) {
+          script.push('# Настройки локального домена');
+
+          if (this.local_domain_add_to_hosts) {
+            script.push(`echo ${this.local_domain_ip} ${this.local_domain_name} | sudo tee -a /etc/hosts > /dev/null`);
+          }
+
+          if (this.local_domain_add_to_global_web_server) {
+            script.push(`sudo ln -s "$PWD/conf/nginx.conf" /etc/nginx/sites-enabled/${this.local_domain_name}.conf`);
+            script.push('sudo nginx -t && sudo service nginx reload');
+          }
+
+          script.push('');
+        }
+
+        if (this.app_env === 'development') {
+          script.push('# Загрузка внешних библиотек');
+
+          if (this.type === 'host') {
+            script.push('[ $UID == 0 ] && chown -R $user src/ logs/');
+            script.push(`php src/bin/update_cdn_libs.php`);
+          }
+
+          if (this.type === 'docker') {
+            script.push(`docker exec ${this.escapeshellarg(this.docker_php_name)} php /app/src/bin/update_cdn_libs.php`);
+          }
+
+          script.push('');
+        }
+
+        if (this.app_env === 'development' && !this.example_table) {
+          script.push('# Удаляем пример таблицы для генератора разделов')
+          script.push(`rm src/migrations/dist/20230617_074512_example_news_ba9.php`);
+          script.push('');
+        }
+
+        if (this.app_env === 'development' && this.init_new_repo) {
+          script.push('cat > README.md <<VERYUNIQUEBLOB');
+          script.push(`# ${this.name}`);
+          script.push('');
+          script.push(this.description);
+          script.push('VERYUNIQUEBLOB');
+          script.push('');
+
+          script.push('# Новый репозиторий');
+          script.push('rm -rf .git LICENSE docs src/web_docroot/cdn/.gitignore');
+          script.push('git init');
+          script.push('git add .');
+          script.push('git commit -m \'Начальный коммит\'');
+          script.push('');
+        }
+
+        if (this.type === 'docker') {
+          script.push(`docker exec ${this.escapeshellarg(this.docker_php_name)} php /app/src/migrations/apply.php`);
+          script.push('');
+        }
+
+        if (this.type === 'host') {
+          if (this.app_env === 'production') {
+            script.push('sudo chown -R www-data src/uploads/ src/web_docroot/thumbnails/ src/web_docroot/asset/ src/web_docroot/cdn/ logs/');
+            script.push('');
+          }
+
+          script.push(`php src/migrations/apply.php`);
+          script.push('');
+        }
+
+        return script.join('\n');
+      }
+    },
+    mounted() {
+      this.$watch('domain', n => {
+        this.db_name = this.db_user = n.replaceAll('.', '_');
+        this.docker_php_name = n;
+        this.local_domain_name = this.app_env === 'development' ? `${n}.local` : n;
+      });
+
+      this.$watch('app_env', n => {
+        if (n === 'development') {
+          this.db_pass = 123;
+          this.local_domain_name = `${this.domain}.local`;
+        }
+
+        if (n === 'production') {
+          this.db_pass = this.passwd();
+          this.local_domain_name = this.domain;
+        }
+      });
+
+      this.$watch('type', n => {
+        if (n === 'docker') {
+          this.app_env = 'development';
+        }
+
+        if (n === 'host') {
+          this.local_domain = true;
+        }
+      });
+
+      const watcher_local_domain_is_valid = () => {
+        this.local_domain_is_valid = this.local_domain && this.local_domain_name && this.local_domain_ip;
+      };
+
+      this.$watch('local_domain', watcher_local_domain_is_valid);
+      this.$watch('local_domain_name', watcher_local_domain_is_valid);
+      this.$watch('local_domain_ip', watcher_local_domain_is_valid);
+
+      watcher_local_domain_is_valid();
+    },
+    methods: {
+      passwd() {
+        const chars = [33,34,36,37,38,40,41,42,43,45,48,49,50,51,52,53,54,55,56,57,61,63,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,94,95,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122];
+        return new Array(Math.round(Math.random() * 10 + 16)).fill(0).reduce(p => p + String.fromCharCode(chars[Math.floor(Math.random()*chars.length)]), '');
+      },
+      escape(str, chars) {
+        return String(str).replace(new RegExp(`[${chars.replaceAll(']', '\\]').replaceAll('\\', '\\\\')}]`, 'g'), '\\$&');
+      },
+      escapeshellarg(str) {
+        if (String(str).match(/[\r\n\t \\'"$\]\[<>?!#&()|`*]/)) {
+          return '$\'' + this.escape(str, '\r\n\t\'\\') + '\'';
+        }
+
+        return str;
+      },
+      async copyConsole() {
+        const stateIndex = 0;
+        this.copyState[stateIndex] = 'copying';
+        new Promise(resolve => setTimeout(resolve, 300))
+          .then(() => navigator.clipboard.writeText(`echo -e '${String(this.script).replace(/[\r'\\]/g, c => `\\x${c.charCodeAt(0).toString(16).padStart(2, '0')}`).replaceAll('\n', '\\n')}' | bash`)
+            .then(() => this.copyState[stateIndex] = 'success', () => this.copyState[stateIndex] = 'error')
+            .then(() => setTimeout(() => this.copyState[stateIndex] = 'ready', 1000)))
+        ;
+      },
+      async copyText() {
+        const stateIndex = 1;
+        this.copyState[stateIndex] = 'copying';
+        new Promise(resolve => setTimeout(resolve, 300))
+          .then(() => navigator.clipboard.writeText(this.script)
+            .then(() => this.copyState[stateIndex] = 'success', () => this.copyState[stateIndex] = 'error')
+            .then(() => setTimeout(() => this.copyState[stateIndex] = 'ready', 1000)))
+        ;
+      }
+    }
+  });
+  app.mount('#content');
+</script>
+</body>
+</html>
