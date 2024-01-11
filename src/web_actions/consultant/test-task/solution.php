@@ -9,13 +9,16 @@ $params = [
 ];
 
 if (Request()->isPost() && Request()->get('action') === 'calculate') {
-    [$result, $error] = Module('project')->execute('ingredients/calculate.php', $params);
+    [$result, $error, $stats] = Module('project')->execute('ingredients/calculate.php', $params);
 
     if ($error) {
-        ReturnJsonError($error, 'invalid_calculating');
+        ReturnJsonError($error, 'invalid_calculating', ['stats' => $stats]);
     }
 
-    ReturnJson($result);
+    ReturnJson([
+        'calculation' => $result,
+        'stats' => $stats,
+    ]);
 }
 
 Template()->render(__dir('.solution/view_form.php'), $params);

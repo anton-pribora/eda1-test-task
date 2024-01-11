@@ -13,6 +13,7 @@ app.component('solution-view-form', {
     return {
       loading: false,
       result: null,
+      stats: null,
       ingredientTypes,
       ingredients: this.initIngredients,
       view: 'table',
@@ -47,7 +48,13 @@ app.component('solution-view-form', {
   methods: {
     async submit() {
       this.loading = true;
-      this.result = await this.$delay(this.$post('', {action: 'calculate', ingredients: this.ingredients, calcType: this.calcType})) || {error: app.config.globalProperties.$ajaxLoaderLastError};
+
+      const result = await this.$delay(this.$post('', {action: 'calculate', ingredients: this.ingredients, calcType: this.calcType}));
+      const error = {error: app.config.globalProperties.$ajaxLoaderLastError};
+
+      this.result = (result && result.calculation) || error;
+      this.stats = result && result.stats;
+
       this.loading = false;
     },
     onChange() {

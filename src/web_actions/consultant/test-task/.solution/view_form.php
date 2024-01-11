@@ -51,7 +51,7 @@ Layout()->startGrab('body.content.end');
       </select>
     </div>
     <div class="col-12">
-      <button type="submit" class="btn btn-default">
+      <button type="submit" class="btn btn-default" :disabled="loading">
         <div v-if="loading" class="spinner-border spinner-border-sm text-primary" role="status">
           <span class="visually-hidden">Загрузка...</span>
         </div>
@@ -70,6 +70,9 @@ Layout()->startGrab('body.content.end');
       </li>
       <li class="nav-item">
         <a class="nav-link" :class="{active: view === 'json'}" href="#" @click.prevent="view='json'">JSON</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" :class="{active: view === 'stats'}" href="#" @click.prevent="view='stats'">Статистика</a>
       </li>
     </ul>
 
@@ -98,6 +101,10 @@ Layout()->startGrab('body.content.end');
 
     <div v-if="view === 'json'">
       <pre><code>{{result}}</code></pre>
+    </div>
+
+    <div v-if="view === 'stats'">
+      <pre><code>{{stats && stats.join('\n')}}</code></pre>
     </div>
   </div>
 
