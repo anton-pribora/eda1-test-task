@@ -1,6 +1,6 @@
 # Тестовое задание
 
-[Текст задания](TASK.md)
+[Текст задания](docs/TASK.md)
 
 ## Решение
 
@@ -21,3 +21,5 @@ docker exec eda1-test-task php /app/src/migrations/apply.php
 Логин: test
 Пароль: test
 ```
+
+![docs/example.png](docs/example.png)
