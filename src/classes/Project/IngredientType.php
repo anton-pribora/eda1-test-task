@@ -67,4 +67,9 @@ class IngredientType extends \ApCode\Billet\AbstractBillet implements \Interface
     {
         return $this->data;
     }
+
+    public function ingredients()
+    {
+        return IngredientRepository::findMany(['typeId' => $this->id() ?: -1]);
+    }
 }

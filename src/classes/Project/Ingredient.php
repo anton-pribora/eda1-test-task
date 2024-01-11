@@ -26,6 +26,11 @@ class Ingredient extends \ApCode\Billet\AbstractBillet implements \Interfaces\Da
         return $this->data['typeId'] ?? null;
     }
 
+    public function type()
+    {
+        return IngredientType::getInstance($this->typeId());
+    }
+
     public function setTypeId($value)
     {
         $this->data['typeId'] = $value;
