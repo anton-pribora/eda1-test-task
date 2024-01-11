@@ -57,8 +57,6 @@ class CombineIterator implements Iterator {
     public function rewind(): void
     {
         $this->i = 0;
-        $this->current = count($this->iterators) - 1;
-
         array_map(static fn($i) => $i->rewind(), $this->iterators);
     }
 
