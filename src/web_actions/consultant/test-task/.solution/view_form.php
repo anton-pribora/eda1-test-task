@@ -38,13 +38,17 @@ Layout()->startGrab('body.content.end');
     </tbody>
   </table>
 
-  <div class="">
-    <label for="ingredients" class="form-label">Входящая строка ингредиентов</label>
-  </div>
-
-  <form class="row row-cols-lg-auto g-2 align-items-center" @submit.prevent="submit">
+  <form class="row row-cols-lg-auto g-3 align-items-end" @submit.prevent="submit">
     <div class="col-12">
+      <label for="ingredients" class="form-label">Входящая строка ингредиентов</label>
       <input type="text" :disabled="loading" class="form-control font-monospace" id="ingredients" v-model="ingredients" placeholder="Например, dcciii">
+    </div>
+    <div class="col-12">
+      <label class="form-label" for="calcType">Калькулятор</label>
+      <select class="form-select" id="calcType" v-model="calcType" :disabled="loading">
+        <option value="mysql">Выборка MySQL</option>
+        <option value="oop">ООП</option>
+      </select>
     </div>
     <div class="col-12">
       <button type="submit" class="btn btn-default">

@@ -5,6 +5,7 @@ Layout()->append('breadcrumbs', new \ApCode\Html\Element\A('Решение', Sho
 
 $params = [
     'ingredients' => Request()->get('ingredients', 'dcciii'),
+    'calcType'    => Request()->get('calcType')
 ];
 
 if (Request()->isPost() && Request()->get('action') === 'calculate') {

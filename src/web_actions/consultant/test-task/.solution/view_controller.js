@@ -15,7 +15,8 @@ app.component('solution-view-form', {
       result: null,
       ingredientTypes,
       ingredients: this.initIngredients,
-      view: 'table'
+      view: 'table',
+      calcType: 'mysql'
     };
   },
   props: {
@@ -46,7 +47,7 @@ app.component('solution-view-form', {
   methods: {
     async submit() {
       this.loading = true;
-      this.result = await this.$delay(this.$post('', {action: 'calculate', ingredients: this.ingredients})) || {error: app.config.globalProperties.$ajaxLoaderLastError};
+      this.result = await this.$delay(this.$post('', {action: 'calculate', ingredients: this.ingredients, calcType: this.calcType})) || {error: app.config.globalProperties.$ajaxLoaderLastError};
       this.loading = false;
     },
     onChange() {
