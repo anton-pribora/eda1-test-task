@@ -6,7 +6,7 @@ Layout()->append('head.css.links', 'https://cdnjs.cloudflare.com/ajax/libs/highl
 Layout()->append('body.js.links', 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js');
 Layout()->append('body.js.code', 'hljs.initHighlightingOnLoad();');
 
-$text = file_get_contents(ExpandPath('@root/../TASK.md'));
+$text = file_get_contents(ExpandPath('@root/../docs/TASK.md'));
 
 if (class_exists('Parsedown')) {
     $parser = new Parsedown();
